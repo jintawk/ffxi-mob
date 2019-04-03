@@ -37,8 +37,9 @@ require 'const'
 require 'gui'
 require 'List'
 
+
 BLUE = 207
-debug = false
+debug = true
 engaged = false
 
 currentMob = nil
@@ -82,6 +83,12 @@ windower.register_event(
         -- We're not currenctly targeting anything, or action came from some other pc/npc
         if currentMob == nil or act.actor_id ~= currentMob.id then return end
 
+        local actioningTarget = windower.ffxi.get_mob_by_id(currentMob.id)
+
+        if actioningTarget ~= nil then 
+            currentMob.hpp = actioningTarget.hpp
+        end
+
         -- No targets or no action on target
         if act.targets == nil or table.getn(act.targets) == 0 or act.targets[1].actions == nil or table.getn(act.targets[1].actions) == 0 then return end
 
@@ -109,12 +116,14 @@ windower.register_event(
         -- Finished TP move
         elseif act.category == 11 then
             skill = res.monster_abilities[act.param]
+        else
+            return
         end
 
         if skill ~= nil then
-            log_d('skill = ' .. skill.en)
+            log_d('skill = ' .. skill.en .. ' / ' .. skill.id)
         else
-            log_d('nil skill')
+            log_d('nil skill! ' .. actionId .. " - " .. act.param)
         end
 
         if skill == nil then return end
@@ -141,7 +150,7 @@ windower.register_event(
                     interrupted = false,
                     start = os.time()
                 }
-                currentMob.move_history:push_back(move)
+                currentMob.move_history:push_front(move)
 
                 log_d('Added new move to move_history at index: ' .. skill.en .. ' - Total length of history now: ' .. currentMob.move_history.count)
             elseif act.param == CAST_PARAM.FAILURE then
@@ -247,7 +256,7 @@ windower.register_event(
 ]]
 windower.register_event(
     'target change',
-    function(new, old)
+    function(target)
         currentMob = nil
         clear_gui()
 
@@ -274,6 +283,12 @@ windower.register_event(
         end
 
         local updatedCurrentMob = windower.ffxi.get_mob_by_id(currentMob.id)
+
+        if updatedCurrentMob == nil then
+            log_d("Resetting mob")
+            currentMob = nil
+            return
+        end
 
         currentMob.hpp = updatedCurrentMob.hpp
 

@@ -59,6 +59,21 @@ function List.push_back(list, item)
 end
 
 --[[
+    Add a new item to the start of a list
+    Parameters:
+    list: List to add item to
+    item: Item to add to the list
+]]
+function List.push_front(list, item)
+    if list.count ~= 0 then
+        list.first = list.first - 1
+    end   
+
+    list.items[list.first] = item;
+    list.count = list.count + 1;
+end
+
+--[[
     Remove the last item from the list
     Parameters:
     list: List to remove item from
@@ -79,7 +94,7 @@ end
 function List.remove(list, itemid)
     local removeAt = nil;
 
-    for idx = list.first, list.first + list.count - 1 do
+    for idx = list.first, list.last do
         if list.items[idx] == itemid then
             removeAt = idx;
         end
@@ -92,7 +107,7 @@ function List.remove(list, itemid)
     if removeAt ~= nil then
         list.items[removeAt] = nil;
 
-        for idx = removeAt + 1, list.first + list.count - 1 do
+        for idx = removeAt + 1, list.last do
             list.items[idx -1] = list.items[idx];
             list.items[idx] = nil;
         end
@@ -111,7 +126,7 @@ end
 ]]
 function List.contains(list, item)
     found = false
-    for idx = list.first, list.first + list.count - 1 do
+    for idx = list.first, list.last do
         if list.items[idx] == item then
             found = true
         end
@@ -126,7 +141,7 @@ end
     list: List to clear
 ]]
 function List.clear(list)
-    for idx = list.first, list.first + list.count - 1 do
+    for idx = list.first, list.last do
         list.items[idx] = nil
     end
 
@@ -143,7 +158,7 @@ end
     item: Item to search for
 ]]
 function List.find_by_id(list, id)
-    for idx = list.first, list.first + list.count - 1 do
+    for idx = list.first, list.last do
         if list.items[idx].id == id then
             return idx
         end
